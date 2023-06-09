@@ -2,7 +2,7 @@ import lamb
 from django.urls import reverse
 from django.test.client import Client
 import pytest
-from api.models import AbstractUser, ExchangeRatesRecord, RefreshToken, SuperAdmin, UserType, Operator
+from api.models import AbstractUser, SuperAdmin, Operator, ExchangeRatesRecord, RefreshToken, UserType
 
 import pytest
 from lamb.db import DeclarativeBase
@@ -34,6 +34,9 @@ def db_session(db_session_factory):
     session_.close()
 
 
+''' AbstractUser models tests'''
+
+
 def test_abstract_user_set_password(db_session, mocker):
     ''' create password for user '''
     user = AbstractUser()
@@ -56,6 +59,7 @@ def test_abstract_user_change_password(db_session, mocker):
 
 def test_abstract_user_change_password_error(db_session, mocker):
     ''' invalid old password '''
+
     with pytest.raises(Exception):
         user = AbstractUser()
         mocker.patch('api.models.validate_password')
@@ -73,11 +77,62 @@ def test_abstract_user_validate_name(db_session):
         db_session.commit()
 
 
-def test_abstract_user_can_create(db_session):
+''' SuperAdmin models tests'''
+
+
+def test_abstract_user_cant_create_user(db_session):
+    ''' User try to create new user - result Error '''
+
     with pytest.raises(Exception):
-        user = AbstractUser(
-            email='some_wrong_email')
-        db_session.add(user)
-        db_session.commit()
+        user = SuperAdmin(
+            is_confirmed=True
+        )
+        result = user.can_create_user(UserType.User)
 
 
+def test_abstract_admin_can_create_user(db_session):
+    ''' Admin can create new user '''
+    admin = SuperAdmin(
+        is_confirmed=True
+    )
+    result = admin.can_create_user(UserType.SUPER_ADMIN)
+
+
+def test_abstract_user_can_read(db_session):
+    ''' Admin can create new user '''
+    user = SuperAdmin(is_confirmed=True)
+    result = user.can_read_user(UserType.USER)
+
+
+def test_abstract_user_is_not_confirmed(db_session):
+    ''' User is not confirmed can do nothing - result Error '''
+    with pytest.raises(Exception):
+        user = SuperAdmin(
+            is_confirmed=False)
+        result = user.can_read_user(UserType.USER)
+
+
+def test_abstract_user_can_edit_user(db_session):
+    ''' Admin can create new user '''
+    user = SuperAdmin(is_confirmed=True)
+    result = user.can_edit_user(UserType.USER)
+
+
+''' Operator models tests'''
+
+
+def test_operator_cant_create_user(db_session):
+    ''' Operator can't create some user '''
+    user_operator = Operator(is_confirmed=True)
+    result = user_operator.can_create_user(UserType.OPERATOR)
+    assert result == False
+
+
+def test_operator_can_read_user(db_session):
+    ''' Operator can't create some user '''
+    user_operator = Operator(is_confirmed=True)
+    result_1 = user_operator.can_read_user(user_operator)
+    result_2 = user_operator.can_read_user(UserType.USER)
+
+    assert result_1 == True
+    assert result_2 == False
