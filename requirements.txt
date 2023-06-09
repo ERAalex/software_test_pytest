@@ -6,3 +6,4 @@ git+https://bitbucket.org/kovsyk/lamb-core.git@v3.0.6#egg=lamb
 
 pytest-django==4.5.2
 pytest-mock==3.10.0
+Faker==18.10.1

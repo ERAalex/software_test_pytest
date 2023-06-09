@@ -1,5 +1,9 @@
 from django.urls import reverse
 from django.test.client import Client
+
+from faker import Faker
+fake = Faker()
+
 import pytest
 from api.models import AbstractUser, ExchangeRatesRecord, RefreshToken, SuperAdmin, UserType, Operator
 
@@ -33,33 +37,42 @@ def test_auth_bad_creds():
     assert response.status_code == 401
 
 
-@pytest.fixture(scope='session')
-def db_engine(request):
-    """yields a SQLAlchemy engine which is suppressed after the test session"""
-    engine_ = create_engine("postgresql://app_user:LC50UD2nTh@localhost:55432/app_core", echo=True)
-    yield engine_
-    engine_.dispose()
+''' API VIEW TESTS'''
+# pytest tests / test_api.py - s
 
 
-@pytest.fixture(scope='session')
-def db_session_factory(db_engine):
-    """returns a SQLAlchemy scoped session factory"""
-    return scoped_session(sessionmaker(bind=db_engine))
+def test_app_version_get():
+    client = Client()
+    response = client.get(reverse("api:app_versions"), content_type="application/json")
+    assert response.status_code == 200
 
 
-@pytest.fixture(scope='function')
-def db_session(db_session_factory):
-    """yields a SQLAlchemy connection which is rollbacked after the test"""
-    session_ = db_session_factory()
-    yield session_
-
-    session_.rollback()
-    session_.close()
+def test_ping_view_get():
+    ''' try to recive 200 and json response - pong '''
+    client = Client()
+    response = client.get(reverse("api:ping"), content_type="application/json")
+    assert response.json() == {'response': 'pong'}
 
 
-def test_abstract_user_set_password(db_session, mocker):
-    user = AbstractUser()
-    mocker.patch('api.models.validate_password')
-    user.set_password("nazca007")
-    assert user.password_hash is not None
+def test_handbooks_list():
+    ''' recive status 200 and list with token's data '''
+    client = Client()
+    response = client.get(reverse("api:handbooks_list"), content_type="application/json")
+    data = response.json()
+    assert response.status_code == 200
+    assert type(data['configs']) == list
+    # we can return result to see what we get
+    return data['configs']
+
+
+def test_handbooks_item_list():
+
+    client = Client()
+    # let's use interesting library - Fake. But we need to delete space between name & surname
+    handbook_name = fake.name().replace(' ', '_')
+    url_path = reverse("api:handbooks_item_list",
+                                  kwargs={"handbook_name": handbook_name})
+    response = client.get(url_path, content_type="application/json")
+
+    assert response.status_code == 404
 

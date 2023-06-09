@@ -156,14 +156,8 @@ def test_create_refresh_token(db_session):
     assert refresh_token.value == 'new_token'
 
 
-def test_create_refresh_token(db_session):
-    ''' Create some token value '''
-    user_id_uuid = uuid.uuid4()
-    refresh_token = RefreshToken(user_id=user_id_uuid, value='new_token')
-    assert refresh_token.value == 'new_token'
-
-
 def test_exchange_rates_record(db_session):
+    ''' Create exchange_rates object '''
     user = AbstractUser()
     exchange = ExchangeRatesRecord(actor_id=user.user_id, rate=10.05)
 
