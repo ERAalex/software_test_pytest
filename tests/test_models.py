@@ -2,6 +2,7 @@ import lamb
 from django.urls import reverse
 from django.test.client import Client
 import pytest
+import uuid
 from api.models import AbstractUser, SuperAdmin, Operator, ExchangeRatesRecord, RefreshToken, UserType
 
 import pytest
@@ -129,10 +130,42 @@ def test_operator_cant_create_user(db_session):
 
 
 def test_operator_can_read_user(db_session):
-    ''' Operator can't create some user '''
+    ''' Operator can't read some user only self '''
     user_operator = Operator(is_confirmed=True)
     result_1 = user_operator.can_read_user(user_operator)
     result_2 = user_operator.can_read_user(UserType.USER)
 
     assert result_1 == True
     assert result_2 == False
+
+
+def test_operator_can_edit_user(db_session):
+    ''' Operator can't edit some user only self '''
+    user_operator = Operator(is_confirmed=True)
+    result_1 = user_operator.can_edit_user(user_operator)
+    result_2 = user_operator.can_edit_user(UserType.USER)
+
+    assert result_1 == True
+    assert result_2 == False
+
+
+def test_create_refresh_token(db_session):
+    ''' Create some token value '''
+    user_id_uuid = uuid.uuid4()
+    refresh_token = RefreshToken(user_id=user_id_uuid, value='new_token')
+    assert refresh_token.value == 'new_token'
+
+
+def test_create_refresh_token(db_session):
+    ''' Create some token value '''
+    user_id_uuid = uuid.uuid4()
+    refresh_token = RefreshToken(user_id=user_id_uuid, value='new_token')
+    assert refresh_token.value == 'new_token'
+
+
+def test_exchange_rates_record(db_session):
+    user = AbstractUser()
+    exchange = ExchangeRatesRecord(actor_id=user.user_id, rate=10.05)
+
+    assert exchange.rate == 10.05
+    assert exchange.actor_id == user.user_id
