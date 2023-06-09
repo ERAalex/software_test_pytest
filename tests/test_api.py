@@ -6,15 +6,6 @@ fake = Faker()
 
 import uuid
 
-import pytest
-from api.models import AbstractUser, ExchangeRatesRecord, RefreshToken, SuperAdmin, UserType, Operator
-
-import pytest
-from lamb.db import DeclarativeBase
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, scoped_session
-
-
 
 def test_ping():
     client = Client()
@@ -40,7 +31,7 @@ def test_auth_bad_creds():
 
 
 ''' API VIEW TESTS'''
-# pytest tests / test_api.py - s
+# pytest tests/test_api.py -s
 
 
 def test_app_version_get():

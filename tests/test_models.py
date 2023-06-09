@@ -1,12 +1,7 @@
-import lamb
-from django.urls import reverse
-from django.test.client import Client
-import pytest
 import uuid
 from api.models import AbstractUser, SuperAdmin, Operator, ExchangeRatesRecord, RefreshToken, UserType
 
 import pytest
-from lamb.db import DeclarativeBase
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 
@@ -36,10 +31,11 @@ def db_session(db_session_factory):
 
 
 ''' AbstractUser models tests'''
+# pytest tests/test_models.py -s
 
 
 def test_abstract_user_set_password(db_session, mocker):
-    ''' create password for user '''
+    """ create password for user """
     user = AbstractUser()
     mocker.patch('api.models.validate_password')
     user.set_password("nazca007")
@@ -47,7 +43,8 @@ def test_abstract_user_set_password(db_session, mocker):
 
 
 def test_abstract_user_change_password(db_session, mocker):
-    ''' set new password and change it '''
+    """ set new password and change it """
+
     user = AbstractUser()
     mocker.patch('api.models.validate_password')
     user.set_password("nazca001")
@@ -59,7 +56,7 @@ def test_abstract_user_change_password(db_session, mocker):
 
 
 def test_abstract_user_change_password_error(db_session, mocker):
-    ''' invalid old password '''
+    """ invalid old password """
 
     with pytest.raises(Exception):
         user = AbstractUser()
@@ -82,7 +79,7 @@ def test_abstract_user_validate_name(db_session):
 
 
 def test_abstract_user_cant_create_user(db_session):
-    ''' User try to create new user - result Error '''
+    """ User try to create new user - result Error """
 
     with pytest.raises(Exception):
         user = SuperAdmin(
@@ -92,7 +89,8 @@ def test_abstract_user_cant_create_user(db_session):
 
 
 def test_abstract_admin_can_create_user(db_session):
-    ''' Admin can create new user '''
+    """ Admin can create new user """
+
     admin = SuperAdmin(
         is_confirmed=True
     )
@@ -100,13 +98,15 @@ def test_abstract_admin_can_create_user(db_session):
 
 
 def test_abstract_user_can_read(db_session):
-    ''' Admin can create new user '''
+    """ Admin can create new user """
+
     user = SuperAdmin(is_confirmed=True)
     result = user.can_read_user(UserType.USER)
 
 
 def test_abstract_user_is_not_confirmed(db_session):
-    ''' User is not confirmed can do nothing - result Error '''
+    """ User is not confirmed can do nothing - result Error """
+
     with pytest.raises(Exception):
         user = SuperAdmin(
             is_confirmed=False)
@@ -114,7 +114,8 @@ def test_abstract_user_is_not_confirmed(db_session):
 
 
 def test_abstract_user_can_edit_user(db_session):
-    ''' Admin can create new user '''
+    """ Admin can create new user """
+
     user = SuperAdmin(is_confirmed=True)
     result = user.can_edit_user(UserType.USER)
 
@@ -123,14 +124,16 @@ def test_abstract_user_can_edit_user(db_session):
 
 
 def test_operator_cant_create_user(db_session):
-    ''' Operator can't create some user '''
+    """ Operator can't create some user """
+
     user_operator = Operator(is_confirmed=True)
     result = user_operator.can_create_user(UserType.OPERATOR)
     assert result == False
 
 
 def test_operator_can_read_user(db_session):
-    ''' Operator can't read some user only self '''
+    """ Operator can't read some user only self """
+
     user_operator = Operator(is_confirmed=True)
     result_1 = user_operator.can_read_user(user_operator)
     result_2 = user_operator.can_read_user(UserType.USER)
@@ -140,7 +143,8 @@ def test_operator_can_read_user(db_session):
 
 
 def test_operator_can_edit_user(db_session):
-    ''' Operator can't edit some user only self '''
+    """ Operator can't edit some user only self """
+
     user_operator = Operator(is_confirmed=True)
     result_1 = user_operator.can_edit_user(user_operator)
     result_2 = user_operator.can_edit_user(UserType.USER)
@@ -150,14 +154,16 @@ def test_operator_can_edit_user(db_session):
 
 
 def test_create_refresh_token(db_session):
-    ''' Create some token value '''
+    """ Create some token value """
+
     user_id_uuid = uuid.uuid4()
     refresh_token = RefreshToken(user_id=user_id_uuid, value='new_token')
     assert refresh_token.value == 'new_token'
 
 
 def test_exchange_rates_record(db_session):
-    ''' Create exchange_rates object '''
+    """ Create exchange_rates object """
+
     user = AbstractUser()
     exchange = ExchangeRatesRecord(actor_id=user.user_id, rate=10.05)
 
