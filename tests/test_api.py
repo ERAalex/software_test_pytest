@@ -4,6 +4,8 @@ from django.test.client import Client
 from faker import Faker
 fake = Faker()
 
+import uuid
+
 import pytest
 from api.models import AbstractUser, ExchangeRatesRecord, RefreshToken, SuperAdmin, UserType, Operator
 
@@ -76,3 +78,18 @@ def test_handbooks_item_list():
 
     assert response.status_code == 404
 
+
+def test_user():
+    client = Client()
+    #lamb.middleware.rest require transform_uuid return uuid.UUID(value)
+    user_id = uuid.uuid4()
+    url = reverse("api:user", kwargs={"user_id": user_id})
+    response = client.get(url, content_type="application/json")
+    assert response.status_code == 404
+
+
+def test_store_exchanges_rates():
+    client = Client()
+    url = reverse("api:store_exchanges_rates")
+    response = client.post(url, content_type="application/json")
+    assert response.status_code == 401
